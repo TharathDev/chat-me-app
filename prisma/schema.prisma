@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id       String @id @default(uuid())
+  userId   String @unique
+  username String @unique
+  name     String
+  email    String @db.Text
+  imageUrl String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participates     Participate[]
+  inboxes          Inbox[]
+  sentMessages     Message[]     @relation("sender")
+  receivedMessages Message[]     @relation("receiver")
+}
+
+model Participate {
+  id String @id @default(uuid())
+
+  userId String
+  user   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  inboxId String
+  inbox   Inbox  @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+}
+
+model Inbox {
+  id           String        @id @default(uuid())
+  participants Participate[]
+  messages     Message[]
+  User         Profile?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String?
+}
+
+model Message {
+  id String @id @default(uuid())
+
+  senderId String
+  sender   Profile @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   Profile @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inboxId String
+  inbox   Inbox  @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+
+  participateId String
+  participate   Participate @relation(fields: [participateId], references: [id], onDelete: Cascade)
+}
