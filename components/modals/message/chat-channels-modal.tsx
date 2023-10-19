@@ -1,6 +1,10 @@
+import { getUserProfile } from "@/lib/users";
 import Image from "next/image";
 
-const ChatChannelsModal = () => {
+const ChatChannelsModal = async (userId: object) => {
+  const profile = await getUserProfile(userId);
+  console.log("profile", profile);
+
   return (
     <div className="flex flex-row h-24 p-4 hover:bg-gray-300">
       <div>
@@ -15,7 +19,7 @@ const ChatChannelsModal = () => {
       </div>
       <div className="flex flex-col w-10/12 justify-between my-1 px-1">
         <div className="flex justify-between">
-          <p>name</p>
+          <p>{profile?.username}</p>
           <p>2022-22-22</p>
         </div>
         <div>

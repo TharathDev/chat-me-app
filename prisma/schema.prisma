@@ -21,48 +21,44 @@ model Profile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  participates     Participate[]
-  inboxes          Inbox[]
-  sentMessages     Message[]     @relation("sender")
-  receivedMessages Message[]     @relation("receiver")
+  conversationsInitiated Channel[] @relation("UserOne")
+  conversationsReceived  Channel[] @relation("UserTwo")
 }
 
-model Participate {
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
   id String @id @default(uuid())
 
-  userId String
-  user   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userOneId String
+  userOne   Profile @relation("UserOne", fields: [userOneId], references: [id], onDelete: Cascade)
 
-  inboxId String
-  inbox   Inbox  @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  userTwoId String
+  userTwo   Profile @relation("UserTwo", fields: [userTwoId], references: [id], onDelete: Cascade)
 
-  messages Message[]
-}
+  Message Message[]
 
-model Inbox {
-  id           String        @id @default(uuid())
-  participants Participate[]
-  messages     Message[]
-  User         Profile?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String?
+  @@unique([userOneId, userTwoId])
+  @@index([userTwoId])
 }
 
 model Message {
-  id String @id @default(uuid())
+  id      String @id @default(uuid())
+  content String @db.Text
 
-  senderId String
-  sender   Profile @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  fileUrl String? @db.Text
 
-  receiverId String
-  receiver   Profile @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  channelId String
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
-  text      String
+  deleted Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inboxId String
-  inbox   Inbox  @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-
-  participateId String
-  participate   Participate @relation(fields: [participateId], references: [id], onDelete: Cascade)
+  @@index([channelId])
 }
